@@ -65,11 +65,14 @@ Code:      https://github.com/SYMOIZ/move-in-proof
 
 ## 8. Images to upload
 
+All images are in `upload-images/`, numbered 01 to 17 in the order to upload them. Captions for each
+are in `upload-images/INDEX.md`.
+
 | Use | File |
 |---|---|
-| Cover or banner | `banner.png` (1920x1080) or `banner-1200x630.png` (social preview) |
-| Architecture diagram | `architecture.png` |
-| Screenshots, in story order | `screenshots/01-home.jpg` through `screenshots/15-public-fingerprints.jpg` |
+| Cover or banner | `upload-images/01-banner.png` (or `17-banner-1200x630.png` for social previews) |
+| Screenshots, in story order | `upload-images/02-home.jpg` through `upload-images/15-public-fingerprints.jpg` |
+| Architecture diagram | `upload-images/16-architecture.png` |
 
 ## 9. Before you press Submit
 
