@@ -1,0 +1,75 @@
+{
+  "Comment": "Move-In Proof: fingerprint every photo, lock the manifest, then wait for the landlord without running anything.",
+  "StartAt": "ListPhotos",
+  "States": {
+    "ListPhotos": {
+      "Type": "Task",
+      "Resource": "${WorkflowFunctionArn}",
+      "Parameters": { "step": "list", "recordId.$": "$.recordId" },
+      "Retry": [{ "ErrorEquals": ["Lambda.ServiceException", "Lambda.TooManyRequestsException", "Lambda.SdkClientException"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "Catch": [{ "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "RevertToDraft" }],
+      "Next": "HashAndLockEachPhoto"
+    },
+    "HashAndLockEachPhoto": {
+      "Type": "Map",
+      "ItemsPath": "$.photos",
+      "MaxConcurrency": 5,
+      "ItemProcessor": {
+        "ProcessorConfig": { "Mode": "INLINE" },
+        "StartAt": "HashAndLock",
+        "States": {
+          "HashAndLock": {
+            "Type": "Task",
+            "Resource": "${WorkflowFunctionArn}",
+            "Parameters": { "step": "hash", "photo.$": "$" },
+            "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 2, "BackoffRate": 2 }],
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.hashed",
+      "Catch": [{ "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "RevertToDraft" }],
+      "Next": "SealManifest"
+    },
+    "SealManifest": {
+      "Type": "Task",
+      "Resource": "${WorkflowFunctionArn}",
+      "Parameters": { "step": "seal", "recordId.$": "$.recordId", "hashed.$": "$.hashed" },
+      "Catch": [{ "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "RevertToDraft" }],
+      "Next": "WaitForLandlord"
+    },
+    "WaitForLandlord": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${WorkflowFunctionArn}",
+        "Payload": { "step": "wait", "recordId.$": "$.recordId", "taskToken.$": "$$.Task.Token" }
+      },
+      "TimeoutSecondsPath": "$.coSignWindowSeconds",
+      "ResultPath": "$.landlord",
+      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": "$.timeout", "Next": "FinalizeTenantOnly" }],
+      "Next": "FinalizeWithLandlordAnswer"
+    },
+    "FinalizeWithLandlordAnswer": {
+      "Type": "Task",
+      "Resource": "${WorkflowFunctionArn}",
+      "Parameters": { "step": "finalize", "recordId.$": "$.recordId", "manifestSha256.$": "$.manifestSha256", "landlord.$": "$.landlord" },
+      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "End": true
+    },
+    "FinalizeTenantOnly": {
+      "Type": "Task",
+      "Resource": "${WorkflowFunctionArn}",
+      "Parameters": { "step": "finalize", "recordId.$": "$.recordId", "manifestSha256.$": "$.manifestSha256" },
+      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "End": true
+    },
+    "RevertToDraft": {
+      "Type": "Task",
+      "Resource": "${WorkflowFunctionArn}",
+      "Parameters": { "step": "revert", "recordId.$": "$.recordId" },
+      "Next": "SealFailed"
+    },
+    "SealFailed": { "Type": "Fail", "Error": "SealFailed", "Cause": "The record was returned to draft." }
+  }
+}

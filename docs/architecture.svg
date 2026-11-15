@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0e5a45"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6a655c"/></marker>
+  </defs>
+  <rect width="1200" height="700" fill="#f6f5f1"/>
+  <text x="40" y="44" font-size="26" font-weight="700" fill="#15130f">Move-In Proof: architecture</text>
+  <text x="40" y="70" font-size="15" fill="#6a655c">Fully serverless. Nothing runs while the workflow waits for the landlord.</text>
+
+  <g font-size="17" font-weight="700" fill="#15130f" text-anchor="middle">
+    <rect x="40" y="290" width="170" height="90" rx="14" fill="#fff" stroke="#e0dbcf" stroke-width="2"/>
+    <text x="125" y="330">Browser</text><text x="125" y="354" font-size="13" font-weight="400" fill="#6a655c">one HTML page</text>
+
+    <rect x="40" y="110" width="170" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="125" y="150">Amazon Cognito</text><text x="125" y="174" font-size="13" font-weight="400" fill="#6a655c">sign-up, sign-in</text>
+
+    <rect x="290" y="290" width="190" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="385" y="330">API Gateway</text><text x="385" y="354" font-size="13" font-weight="400" fill="#6a655c">HTTP API + JWT route</text>
+
+    <rect x="560" y="290" width="170" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="645" y="330">Lambda: api</text><text x="645" y="354" font-size="13" font-weight="400" fill="#6a655c">page + JSON API</text>
+
+    <rect x="860" y="110" width="210" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="965" y="150">DynamoDB</text><text x="965" y="174" font-size="13" font-weight="400" fill="#6a655c">record status, photo list</text>
+
+    <rect x="860" y="290" width="210" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="965" y="330">S3 + Object Lock</text><text x="965" y="354" font-size="13" font-weight="400" fill="#6a655c">photos, manifest, seal</text>
+
+    <rect x="560" y="470" width="170" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="645" y="510">Step Functions</text><text x="645" y="534" font-size="13" font-weight="400" fill="#6a655c">seal, wait, timeout</text>
+
+    <rect x="860" y="470" width="210" height="90" rx="14" fill="#e6f1ec" stroke="#0e5a45" stroke-width="2"/>
+    <text x="965" y="510">Lambda: workflow</text><text x="965" y="534" font-size="13" font-weight="400" fill="#6a655c">hash, lock, finalise</text>
+  </g>
+
+  <g stroke="#0e5a45" stroke-width="2.5" fill="none" marker-end="url(#a)">
+    <path d="M210 335H288"/>
+    <path d="M480 335H558"/>
+    <path d="M730 335H858"/>
+    <path d="M645 290V240Q645 155 858 155" />
+    <path d="M645 380V468"/>
+    <path d="M730 515H858"/>
+    <path d="M965 470V382"/>
+    <path d="M125 290V202" marker-start="url(#a)"/>
+  </g>
+  <g stroke="#6a655c" stroke-width="2" fill="none" stroke-dasharray="7 6" marker-end="url(#g)">
+    <path d="M210 150H385V288"/>
+    <path d="M125 380V640H965V382"/>
+    <path d="M1000 470Q1030 420 1040 205" opacity="0"/>
+  </g>
+  <g font-size="13" fill="#3f3b34">
+    <text x="215" y="326">HTTPS</text>
+    <text x="222" y="140" fill="#6a655c">JWT checked on /api/my</text>
+    <text x="395" y="640" fill="#6a655c" dy="-10">presigned upload and view (photos go straight to S3)</text>
+    <text x="655" y="268">read and write</text>
+    <text x="655" y="418">start the run; SendTaskSuccess</text>
+    <text x="655" y="436">when the landlord answers</text>
+    <text x="738" y="506">invoke</text>
+    <text x="975" y="436">fingerprint + lock</text>
+  </g>
+  <text x="40" y="676" font-size="14" fill="#6a655c">Deployed with one template, one command. No servers, no pipeline.</text>
+</svg>

@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Move-In Proof - sealed, co-signed evidence of a rented home's condition. Fully serverless, scales to zero.
+
+Parameters:
+  CoSignWindowSeconds:
+    Type: Number
+    Default: 259200
+    MinValue: 60
+    Description: How long the workflow waits for the landlord before sealing as tenant-only. Use 120 for a demo.
+  RetentionDays:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    Description: Object Lock retention for sealed photos and manifests. Use the lease length in real use.
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures: [arm64]
+    Timeout: 15
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE: !Ref Table
+        BUCKET: !Ref EvidenceBucket
+        RETENTION_DAYS: !Ref RetentionDays
+        COSIGN_WINDOW_SECONDS: !Ref CoSignWindowSeconds
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - { Name: verified_email, Priority: 1 }
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: false
+          RequireSymbols: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_PASSWORD_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      PreventUserExistenceErrors: ENABLED
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizers:
+          CognitoJwt:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}'
+              audience:
+                - !Ref UserPoolClient
+
+  EvidenceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      ObjectLockEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ['*']
+            AllowedMethods: [POST, GET]
+            AllowedHeaders: ['*']
+            MaxAge: 3000
+
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: api.handler
+      Environment:
+        Variables:
+          STATE_MACHINE_ARN: !Ref SealStateMachine
+          COGNITO_CLIENT_ID: !Ref UserPoolClient
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+        - Statement:
+            - Effect: Allow
+              Action: [s3:PutObject, s3:GetObject, s3:GetObjectVersion, s3:GetObjectRetention]
+              Resource: !Sub '${EvidenceBucket.Arn}/records/*'
+            - Effect: Allow
+              Action: states:StartExecution
+              Resource: !Ref SealStateMachine
+            - Effect: Allow
+              Action: states:SendTaskSuccess
+              Resource: '*'
+      Events:
+        Open:            # the page, public record views and the landlord's co-sign link
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+        SignedIn:        # same code, but API Gateway has already verified the Cognito token
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/my/{proxy+}
+            Method: ANY
+            Auth:
+              Authorizer: CognitoJwt
+
+  WorkflowFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: workflow.handler
+      Timeout: 60
+      MemorySize: 512
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+        - Statement:
+            - Effect: Allow
+              Action: [s3:GetObject, s3:GetObjectVersion, s3:PutObject, s3:PutObjectRetention]
+              Resource: !Sub '${EvidenceBucket.Arn}/records/*'
+
+  SealStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Type: STANDARD
+      DefinitionUri: statemachine/seal.asl.json
+      DefinitionSubstitutions:
+        WorkflowFunctionArn: !GetAtt WorkflowFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref WorkflowFunction
+
+Outputs:
+  AppUrl:
+    Description: Open this in a browser
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/'
+  EvidenceBucketName:
+    Value: !Ref EvidenceBucket
+  StateMachineArn:
+    Value: !Ref SealStateMachine

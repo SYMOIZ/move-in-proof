@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Move-In Proof</title>
+<style>
+  :root {
+    --bg:#f6f5f1; --surface:#fff; --ink:#15130f; --muted:#6a655c; --line:#e4e0d6; --field:#fbfaf7;
+    --accent:#0e5a45; --accent-ink:#fff; --accent-soft:#e6f1ec;
+    --ok:#17734a; --ok-bg:#e3f3ea; --bad:#a3271f; --bad-bg:#fbe7e4; --warn:#855600; --warn-bg:#fcf0d4;
+    --shadow:0 1px 2px #15130f0d, 0 8px 24px -12px #15130f26;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111210; --surface:#1a1b18; --ink:#efece4; --muted:#9e998d; --line:#2e2f2a; --field:#141512;
+      --accent:#58c19d; --accent-ink:#0b1a14; --accent-soft:#17271f;
+      --ok:#6fd39c; --ok-bg:#163223; --bad:#ff9d94; --bad-bg:#3b1a17; --warn:#f0c064; --warn-bg:#382c10;
+      --shadow:0 1px 2px #0006, 0 8px 24px -12px #000a; }
+  }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 var(--sans); -webkit-font-smoothing:antialiased; }
+  svg { flex:none; }
+  a { color:var(--accent); }
+  .shell { max-width:1080px; margin:0 auto; padding:0 24px; }
+
+  /* top bar */
+  .topbar { position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line); }
+  .bar { display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .brand { display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none; font-weight:650; font-size:16px; letter-spacing:-.01em; }
+  .mark { display:grid; place-items:center; width:30px; height:30px; border-radius:8px; background:var(--accent); color:var(--accent-ink); }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border:1px solid var(--line); border-radius:999px; font-size:13px; font-weight:600; color:var(--muted); background:var(--surface); }
+  .nav { display:flex; align-items:center; gap:10px; }
+  #nav { display:flex; align-items:center; gap:6px; }
+  .navlink { color:var(--ink); text-decoration:none; font-weight:600; font-size:14px; padding:7px 10px; border-radius:8px; }
+  .navlink:hover { background:var(--accent-soft); }
+  .tabs { display:flex; gap:4px; padding:4px; background:var(--field); border:1px solid var(--line); border-radius:11px; }
+  .tabs button { flex:1; min-height:34px; border:0; background:transparent; color:var(--muted); }
+  .tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--shadow); }
+  .linkbtn { display:inline; min-height:0; padding:0; border:0; background:none; color:var(--accent); font-weight:600; }
+  .authwrap { max-width:440px; margin:24px auto 0; }
+  .pagehead { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; padding:6px 0 24px; }
+  .reclist { display:grid; gap:12px; max-width:760px; }
+  a.recitem { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:0; color:var(--ink); text-decoration:none; transition:transform .14s, border-color .14s; }
+  a.recitem:hover { transform:translateY(-1px); border-color:var(--accent); }
+  .recitem strong { display:block; font-size:16px; }
+  main { padding:36px 0 80px; }
+
+  /* type */
+  .eyebrow { margin:0 0 10px; font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); }
+  .display { font-family:var(--serif); font-weight:600; font-size:clamp(34px, 5vw, 52px); line-height:1.06; letter-spacing:-.02em; margin:0 0 18px; text-wrap:balance; }
+  h1.address { font-family:var(--serif); font-weight:600; font-size:clamp(26px, 3.6vw, 36px); line-height:1.15; letter-spacing:-.015em; margin:0 0 12px; text-wrap:balance; }
+  h2 { font-size:16px; font-weight:650; letter-spacing:-.01em; margin:0 0 6px; }
+  p { margin:0 0 12px; }
+  .lead { font-size:18px; line-height:1.5; color:var(--muted); max-width:34em; margin-bottom:28px; }
+  .muted { color:var(--muted); font-size:14px; }
+  code, .mono { font-family:var(--mono); font-size:12.5px; overflow-wrap:anywhere; }
+
+  /* surfaces */
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; box-shadow:var(--shadow); }
+  .card.key { border-color:var(--accent); background:var(--accent-soft); box-shadow:none; }
+  .card.next { background:var(--accent-soft); border-color:transparent; box-shadow:none; }
+  .card.next h2 { display:flex; align-items:center; gap:8px; color:var(--accent); }
+  .banner { display:flex; gap:10px; padding:12px 14px; border-radius:10px; margin-top:12px; font-weight:600; font-size:14px; overflow-wrap:anywhere; }
+  .ok { background:var(--ok-bg); color:var(--ok); }
+  .bad { background:var(--bad-bg); color:var(--bad); }
+  .warn { background:var(--warn-bg); color:var(--warn); }
+
+  /* forms */
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+  input[type=text], input[type=email], input[type=password], textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--field); color:var(--ink); font:inherit; transition:border-color .12s, box-shadow .12s; }
+  input:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  textarea { min-height:84px; resize:vertical; }
+  button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:0 16px; border-radius:9px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); font:inherit; font-weight:600; cursor:pointer; transition:transform .08s, filter .12s, background .12s; }
+  button:hover:not(:disabled) { filter:brightness(1.08); }
+  button:active:not(:disabled) { transform:translateY(1px); }
+  button:focus-visible, a:focus-visible, .drop:focus-within { outline:2px solid var(--accent); outline-offset:2px; }
+  button.ghost { background:var(--surface); border-color:var(--line); color:var(--ink); }
+  button.danger { background:var(--surface); border-color:var(--bad); color:var(--bad); }
+  button.small { min-height:30px; padding:0 10px; font-size:13px; }
+  button.block { width:100%; min-height:46px; font-size:16px; margin-top:20px; }
+  button:disabled { opacity:.45; cursor:default; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; }
+  .linkbox { display:flex; gap:8px; align-items:center; }
+  .linkbox input { flex:1; min-width:0; font-family:var(--mono); font-size:12.5px; }
+
+  /* home */
+  .hero { display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(0, .85fr); gap:56px; align-items:center; padding:28px 0 44px; }
+  .how { list-style:none; margin:0; padding:0; display:grid; gap:18px; }
+  .how li { display:flex; gap:14px; align-items:flex-start; }
+  .howicon { display:grid; place-items:center; width:40px; height:40px; border-radius:11px; background:var(--accent-soft); color:var(--accent); flex:none; }
+  .how strong { display:block; }
+  .how span.t { color:var(--muted); font-size:14px; }
+  .formcard { padding:28px; margin:0; }
+  .facts { list-style:none; margin:0; padding:22px 0 0; border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; color:var(--muted); font-size:14px; }
+  .facts strong { display:block; color:var(--ink); margin-bottom:2px; }
+
+  /* record header */
+  .rechead { padding:6px 0 26px; }
+  .badge { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; flex:none; padding:5px 12px; border-radius:999px; font-size:13px; font-weight:650; }
+  .badge::before { content:""; width:8px; height:8px; border-radius:50%; background:currentColor; }
+  .steps { display:flex; list-style:none; padding:0; margin:26px 0 0; max-width:620px; }
+  .steps li { flex:1; position:relative; display:flex; flex-direction:column; gap:8px; font-size:13px; font-weight:600; color:var(--muted); }
+  .steps li::after { content:""; position:absolute; top:13px; left:34px; right:6px; height:2px; background:var(--line); }
+  .steps li:last-child { flex:none; }
+  .steps li:last-child::after { display:none; }
+  .steps .num { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; border:2px solid var(--line); background:var(--bg); font-size:13px; }
+  .steps li.done { color:var(--ink); }
+  .steps li.done .num { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .steps li.done::after { background:var(--accent); }
+  .steps li.current { color:var(--ink); }
+  .steps li.current .num { border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+
+  /* record layout */
+  .layout { display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:24px; align-items:start; }
+  aside { position:sticky; top:84px; }
+  dl { display:grid; grid-template-columns:max-content 1fr; gap:8px 16px; margin:0; font-size:14px; }
+  dt { color:var(--muted); }
+  dd { margin:0; overflow-wrap:anywhere; }
+
+  /* drop zone */
+  .drop { display:flex; flex-direction:column; align-items:center; gap:4px; margin:14px 0 0; padding:28px 16px; border:1.5px dashed var(--line); border-radius:12px; background:var(--field); text-align:center; cursor:pointer; font-weight:400; transition:border-color .12s, background .12s; }
+  .drop:hover, .drop.over { border-color:var(--accent); background:var(--accent-soft); }
+  .drop svg { color:var(--accent); margin-bottom:6px; }
+  .drop strong { font-size:15px; }
+  .drop input { position:absolute; width:1px; height:1px; opacity:0; }
+  .qrow { display:grid; grid-template-columns:48px minmax(0, 1fr) auto; gap:12px; align-items:center; margin-top:10px; padding:8px; border:1px solid var(--line); border-radius:10px; }
+  .qrow img { width:48px; height:48px; border-radius:7px; object-fit:cover; }
+  .qname { display:block; font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px; }
+  .qrow input { padding:7px 10px; }
+
+  /* photos */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:14px; margin-top:14px; }
+  .photo { border:1px solid var(--line); border-radius:11px; overflow:hidden; background:var(--field); transition:transform .14s, box-shadow .14s; }
+  .photo:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+  .photo.hit { outline:3px solid var(--ok); outline-offset:2px; }
+  .imgbtn { display:block; width:100%; min-height:0; padding:0; border:0; border-radius:0; background:#00000014; cursor:zoom-in; }
+  .imgbtn:hover { filter:none !important; }
+  .photo img { display:block; width:100%; aspect-ratio:4/3; object-fit:contain; }
+  .photo .meta { padding:10px 12px; font-size:13.5px; }
+  .hash { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11.5px; margin-top:2px; }
+  .nophoto { display:grid; place-items:center; aspect-ratio:4/3; color:var(--muted); background:#00000008; }
+
+  /* seal */
+  .sealgrid { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:20px; align-items:center; }
+  .stamp { width:132px; height:132px; transform:rotate(-9deg); animation:stamp .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .stamp.ok { background:none; color:var(--ok); } .stamp.warn { background:none; color:var(--warn); } .stamp.bad { background:none; color:var(--bad); }
+  .fingerprint { display:block; padding:11px 12px; border:1px solid var(--line); border-radius:9px; background:var(--field); flex:1; min-width:0; }
+  .tick { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; margin-top:12px; }
+  .tick.ok, .tick.bad, .tick.warn { background:none; }
+  details { margin-top:16px; font-size:14px; border-top:1px solid var(--line); padding-top:12px; }
+  summary { cursor:pointer; color:var(--muted); font-weight:600; }
+  details dl { margin-top:10px; }
+
+  /* verify */
+  .verdict { display:flex; gap:14px; align-items:flex-start; margin-top:14px; padding:16px; border-radius:12px; animation:rise .25s ease both; }
+  .verdict .vicon { display:grid; place-items:center; width:40px; height:40px; border-radius:50%; background:currentColor; flex:none; }
+  .verdict .vicon svg { color:var(--surface); }
+  .verdict strong { display:block; font-size:19px; letter-spacing:-.01em; }
+  .verdict span { font-size:14px; }
+
+  dialog.lightbox { border:0; border-radius:14px; padding:14px; background:var(--surface); color:var(--ink); max-width:min(96vw, 1100px); }
+  dialog.lightbox::backdrop { background:#000d; }
+  dialog.lightbox img { display:block; max-width:100%; max-height:78vh; margin:0 auto; border-radius:8px; }
+
+  .print-only { display:none; }
+  table { border-collapse:collapse; width:100%; font-size:11px; }
+  th, td { border:1px solid #999; padding:4px 6px; text-align:left; vertical-align:top; overflow-wrap:anywhere; }
+
+  @keyframes rise { from { opacity:0; transform:translateY(8px); } }
+  @keyframes stamp { from { opacity:0; transform:rotate(-9deg) scale(1.7); } }
+  #app > *, .maincol > *, aside > * { animation:rise .3s ease both; }
+  .maincol > :nth-child(2), aside > :nth-child(2) { animation-delay:.05s; }
+  .maincol > :nth-child(3) { animation-delay:.1s; }
+  .maincol > :nth-child(n+4) { animation-delay:.15s; }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns:1fr; gap:32px; padding-top:8px; }
+    .facts { grid-template-columns:1fr; gap:14px; }
+    .layout { grid-template-columns:1fr; }
+    aside { position:static; order:-1; }
+    .sealgrid { grid-template-columns:1fr; }
+    .stamp { justify-self:start; }
+  }
+  @media (max-width: 520px) { .shell { padding:0 16px; } .steps li { font-size:12px; } .card { padding:18px; } }
+
+  @media print {
+    :root { --bg:#fff; --surface:#fff; --field:#fff; --ink:#000; --muted:#444; --line:#bbb; --accent:#0e5a45; --accent-soft:#fff; --ok:#14532d; --ok-bg:#fff; --bad:#7f1d1d; --bad-bg:#fff; --warn:#5c3d00; --warn-bg:#fff; --shadow:none; }
+    * { animation:none !important; }
+    .topbar { position:static; border:0; }
+    main { padding:0; } .shell { max-width:none; padding:0; }
+    button, input, textarea, label, details, .no-print, .chip, #nav { display:none !important; }
+    .print-only { display:block; }
+    .layout { display:block; }
+    aside { position:static; }
+    .card { border:0; padding:0; margin-bottom:16px; }
+    .badge { border:1px solid currentColor; }
+    .grid { grid-template-columns:repeat(3, 1fr); }
+    .photo, tr, .card { break-inside:avoid; }
+    .imgbtn { display:block !important; background:none; }
+    .fingerprint { border:0; padding:0; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="shell bar">
+    <a class="brand" href="#/">
+      <span class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      Move-In Proof
+    </a>
+    <nav class="nav"><span id="role" class="chip" hidden></span><span id="nav"></span></nav>
+  </div>
+</header>
+<main><div class="shell" id="app"></div></main>
+<script>
+const app = document.getElementById('app');
+const roleChip = document.getElementById('role');
+const navBox = document.getElementById('nav');
+let pollTimer = null;
+let tickTimer = null;
+let cfg = { clientId: '', endpoint: '' };  // filled from /api/config
+let session = null;                        // { idToken, refreshToken, email, exp }
+let afterAuth = null;                      // where to go once signed in
+try { session = JSON.parse(localStorage.getItem('mip-session')); } catch (e) { /* storage unavailable */ }
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid);
+  return el;
+}
+
+const ICONS = {
+  shield: '<path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/>',
+  camera: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  upload: '<path d="M12 16V5M7 10l5-5 5 5M5 19h14"/>',
+  print: '<path d="M7 9V4h10v5M7 17H5v-7h14v7h-2"/><rect x="7" y="14" width="10" height="6"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  eyeoff: '<path d="M3 3l18 18M10.6 6.2A9.6 9.6 0 0112 6c5 0 8.5 4 9.5 6a12 12 0 01-2.6 3.3M6.3 7.6A12 12 0 002.5 12c1 2 4.5 6 9.5 6a9.3 9.3 0 003.4-.6"/>',
+};
+function icon(name, size = 18) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const attrs = { viewBox: '0 0 24 24', width: size, height: size, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' };
+  for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
+  svg.innerHTML = ICONS[name];
+  return svg;
+}
+
+// ---- account (Amazon Cognito, called directly from the browser) ----------
+function saveSession(next) {
+  session = next;
+  try { next ? localStorage.setItem('mip-session', JSON.stringify(next)) : localStorage.removeItem('mip-session'); } catch (e) { /* storage unavailable */ }
+  drawNav();
+}
+
+async function cognito(op, body) {
+  const res = await fetch(cfg.endpoint, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-amz-json-1.1', 'x-amz-target': 'AWSCognitoIdentityProviderService.' + op },
+    body: JSON.stringify({ ClientId: cfg.clientId, ...body }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.message || 'The sign-in service did not respond. Try again.');
+    err.code = (data.__type || '').split('#').pop();
+    throw err;
+  }
+  return data;
+}
+
+function tokenClaims(token) {
+  const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(part + '='.repeat((4 - part.length % 4) % 4)));
+}
+
+function startSession(result, refreshToken) {
+  const claims = tokenClaims(result.IdToken);
+  saveSession({ idToken: result.IdToken, refreshToken: result.RefreshToken || refreshToken, email: claims.email, exp: claims.exp });
+}
+
+async function freshToken() {
+  if (!session) return null;
+  if (session.exp * 1000 > Date.now() + 60000) return session.idToken;
+  try {
+    const r = await cognito('InitiateAuth', { AuthFlow: 'REFRESH_TOKEN_AUTH', AuthParameters: { REFRESH_TOKEN: session.refreshToken } });
+    startSession(r.AuthenticationResult, session.refreshToken);
+    return session.idToken;
+  } catch (e) { saveSession(null); return null; }
+}
+
+function goSignIn() { afterAuth = location.hash; location.hash = '#/signin'; }
+
+function drawNav() {
+  navBox.replaceChildren(...(session
+    ? [h('a', { class: 'navlink', href: '#/records' }, 'My records'),
+       h('button', { class: 'ghost small', title: 'Signed in as ' + session.email, onclick: () => { saveSession(null); if (location.hash === '#/' || !location.hash) route(); else location.hash = '#/'; } }, 'Sign out')]
+    : [h('a', { class: 'navlink', href: '#/signin' }, 'Sign in')]));
+}
+
+// Signed-in calls go through /api/my/..., where API Gateway verifies the token first.
+async function api(method, path, body, token) {
+  const headers = {};
+  const idToken = await freshToken();
+  if (body) headers['content-type'] = 'application/json';
+  if (token) headers['x-mip-token'] = token;
+  if (idToken) headers.authorization = 'Bearer ' + idToken;
+  const res = await fetch((idToken ? '/api/my/records' : '/api/records') + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { saveSession(null); goSignIn(); throw new Error('Please sign in to continue.'); }
+  if (!res.ok) throw new Error(data.error || 'Request failed (' + res.status + ')');
+  return data;
+}
+
+function authCard(mode, intro) {
+  const email = h('input', { type: 'email', autocomplete: 'email', maxlength: 120, placeholder: 'you@example.com' });
+  const password = h('input', { type: 'password', maxlength: 120 });
+  const code = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 8, placeholder: '6-digit code' });
+  const msg = h('div');
+  const who = () => email.value.trim();
+  const finish = () => { const next = afterAuth; afterAuth = null; if (next && next !== location.hash) location.hash = next; else route(); };
+  const signIn = async () => {
+    const r = await cognito('InitiateAuth', { AuthFlow: 'USER_PASSWORD_AUTH', AuthParameters: { USERNAME: who(), PASSWORD: password.value } });
+    startSession(r.AuthenticationResult);
+    finish();
+  };
+  const actions = {
+    signin: signIn,
+    signup: async () => { await cognito('SignUp', { Username: who(), Password: password.value, UserAttributes: [{ Name: 'email', Value: who() }] }); draw('confirm'); },
+    confirm: async () => { await cognito('ConfirmSignUp', { Username: who(), ConfirmationCode: code.value.trim() }); await signIn(); },
+    forgot: async () => { await cognito('ForgotPassword', { Username: who() }); password.value = ''; code.value = ''; draw('reset'); },
+    reset: async () => { await cognito('ConfirmForgotPassword', { Username: who(), ConfirmationCode: code.value.trim(), Password: password.value }); await signIn(); },
+  };
+  const TITLE = { signin: 'Welcome back', signup: 'Create your account', confirm: 'Check your email', forgot: 'Reset your password', reset: 'Choose a new password' };
+  const BUTTON = { signin: 'Sign in', signup: 'Create account', confirm: 'Confirm and continue', forgot: 'Email me a code', reset: 'Save and sign in' };
+  const form = h('form', { class: 'card formcard', novalidate: true, onsubmit: e => { e.preventDefault(); submit(); } });
+  let go;
+  async function submit() {
+    go.disabled = true; msg.replaceChildren();
+    try { await actions[mode](); }
+    catch (e) {
+      if (e.code === 'UserNotConfirmedException') { await cognito('ResendConfirmationCode', { Username: who() }).catch(() => {}); return draw('confirm'); }
+      msg.replaceChildren(banner('bad', e.message)); go.disabled = false;
+    }
+  }
+  const link = (text, to) => h('button', { class: 'linkbtn', type: 'button', onclick: () => draw(to) }, text);
+  const tab = (to, text) => h('button', { type: 'button', role: 'tab', class: mode === to ? 'on' : '', 'aria-selected': String(mode === to), onclick: () => draw(to) }, text);
+  function draw(next) {
+    mode = next; msg.replaceChildren();
+    const entry = mode === 'signin' || mode === 'signup';
+    const needsCode = mode === 'confirm' || mode === 'reset';
+    password.setAttribute('autocomplete', mode === 'signin' ? 'current-password' : 'new-password');
+    go = h('button', { class: 'block', type: 'submit' }, BUTTON[mode]);
+    const text = {
+      signup: intro || 'Your records are kept in your account, so there is no link to lose.',
+      signin: 'Sign in to open your records.',
+      confirm: `We emailed a 6-digit code to ${who()}. Enter it to finish.`,
+      forgot: 'Enter your email and we will send you a code.',
+      reset: `Enter the code we emailed to ${who()} and choose a new password.`,
+    }[mode];
+    form.replaceChildren(...[
+      entry && h('div', { class: 'tabs', role: 'tablist' }, tab('signup', 'Create account'), tab('signin', 'Sign in')),
+      h('h2', { style: entry ? 'margin-top:20px' : '' }, TITLE[mode]),
+      h('p', { class: 'muted' }, text),
+      !needsCode && field('Email', email),
+      needsCode && field('Code from the email', code),
+      needsCode && cfg.clientId === 'local' && h('p', { class: 'muted', style: 'margin:6px 0 0' }, 'Local rehearsal: no email is sent, the code is 123456.'),
+      mode !== 'confirm' && mode !== 'forgot' && field(mode === 'reset' ? 'New password' : 'Password', password),
+      (mode === 'signup' || mode === 'reset') && h('p', { class: 'muted', style: 'margin:6px 0 0' }, 'At least 8 characters, with a letter and a number.'),
+      go,
+      h('p', { class: 'muted', style: 'margin:14px 0 0;text-align:center' },
+        mode === 'signin' && link('Forgot your password?', 'forgot'),
+        mode === 'confirm' && h('button', { class: 'linkbtn', type: 'button', onclick: async () => {
+          await cognito('ResendConfirmationCode', { Username: who() }).catch(() => {});
+          msg.replaceChildren(banner('ok', 'A new code is on its way.'));
+        } }, 'Send the code again'),
+        (mode === 'forgot' || mode === 'reset') && link('Back to sign in', 'signin')),
+      msg,
+    ].flat().filter(Boolean));
+  }
+  draw(mode);
+  return form;
+}
+
+async function sha256Hex(buffer) {
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const textHash = text => sha256Hex(new TextEncoder().encode(text));
+const WHEN = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+const when = iso => iso ? new Date(iso).toLocaleString(undefined, WHEN) : '';
+const banner = (cls, text) => h('div', { class: 'banner ' + cls, role: 'status' }, text);
+const baseUrl = () => location.origin + location.pathname;
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+function show(...nodes) { app.replaceChildren(...nodes); window.scrollTo(0, 0); }
+function fail(err) {
+  roleChip.hidden = true;
+  show(h('div', { class: 'card', style: 'max-width:520px' }, h('h2', {}, 'This record could not be opened'), banner('bad', err.message),
+    h('p', { class: 'row' }, h('a', { href: '#/' }, 'Start a new record'))));
+}
+
+function copyButton(getText) {
+  const b = h('button', { class: 'ghost', type: 'button', onclick: async () => {
+    try { await navigator.clipboard.writeText(getText()); b.textContent = 'Copied'; }
+    catch (e) { b.textContent = 'Copy failed'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  } }, 'Copy');
+  return b;
+}
+
+// value may be a string or a promise of one
+function linkRow(text, value) {
+  const input = h('input', { type: 'text', readonly: true, value: '...', 'aria-label': text });
+  Promise.resolve(value).then(v => { input.value = v; });
+  return [h('label', {}, text), h('div', { class: 'linkbox' }, input, copyButton(() => input.value))];
+}
+
+function field(text, input) {
+  const id = 'f' + Math.random().toString(36).slice(2);
+  input.id = id;
+  return [h('label', { for: id }, text), input];
+}
+
+function dropzone({ title, hint, accept, multiple, label, onFiles }) {
+  const input = h('input', { type: 'file', accept, multiple, 'aria-label': label, onchange: () => { onFiles([...input.files]); input.value = ''; } });
+  const zone = h('label', { class: 'drop' }, icon('upload', 26), h('strong', {}, title), h('span', { class: 'muted' }, hint), input);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); onFiles([...e.dataTransfer.files]); });
+  return zone;
+}
+
+// ---- home ---------------------------------------------------------------
+function home() {
+  roleChip.hidden = true;
+  const address = h('input', { type: 'text', maxlength: 200, placeholder: 'Flat 302, Lake View Residency, Kondapur' });
+  const tenant = h('input', { type: 'text', maxlength: 120, placeholder: 'Your full name' });
+  const landlord = h('input', { type: 'text', maxlength: 120, placeholder: 'Their full name' });
+  const msg = h('div');
+  const go = h('button', { class: 'block', onclick: async () => {
+    go.disabled = true; msg.replaceChildren();
+    try {
+      const r = await api('POST', '', { address: address.value, tenantName: tenant.value, landlordName: landlord.value });
+      location.hash = `#/r/${r.id}`;
+    } catch (e) { msg.replaceChildren(banner('bad', e.message)); go.disabled = false; }
+  } }, 'Start a record', icon('arrow'));
+  const startCard = session
+    ? h('div', { class: 'card formcard' },
+        h('h2', {}, 'Start a record'),
+        h('p', { class: 'muted' }, 'Takes about a minute. You can add photos next.'),
+        field('Address of the rented home', address),
+        field('Tenant', tenant),
+        field('Landlord', landlord),
+        go, msg)
+    : authCard('signup', 'Create a free account to start a record. Your records stay in your account, so there is no link to lose.');
+  const how = [
+    ['camera', 'Photograph', 'Upload and label photos of every room on move-in day.'],
+    ['lock', 'Seal', 'Each photo is fingerprinted and locked. Your landlord co-signs by link.'],
+    ['search', 'Verify', 'At move-out, anyone can check a photo against the seal in seconds.'],
+  ];
+  show(
+    h('section', { class: 'hero' },
+      h('div', {},
+        h('p', { class: 'eyebrow' }, 'Evidence for rental deposits'),
+        h('h1', { class: 'display' }, 'Prove what the flat looked like on day one.'),
+        h('p', { class: 'lead' }, 'Seal your move-in photos so that nobody, including you, can swap or edit them later. When the deposit is argued, the photos speak for themselves.'),
+        h('ol', { class: 'how' }, how.map(([i, t, x]) => h('li', {}, h('span', { class: 'howicon' }, icon(i, 20)), h('div', {}, h('strong', {}, t), h('span', { class: 't' }, x)))))),
+      startCard),
+    h('ul', { class: 'facts' },
+      h('li', {}, h('strong', {}, 'Locked, not just stored'), 'Sealed photos cannot be overwritten or deleted until the lock expires.'),
+      h('li', {}, h('strong', {}, 'Checked on your device'), 'Verifying a photo happens in your browser. The file is never uploaded.'),
+      h('li', {}, h('strong', {}, 'Nothing for the landlord to install'), 'Your records live in your account. The landlord co-signs by link, with no sign-up required.')));
+}
+
+// ---- record -------------------------------------------------------------
+async function record(id, token) {
+  let data;
+  try { data = await api('GET', '/' + id, null, token); } catch (e) { return fail(e); }
+  render(data, id, token, token ? 'landlord' : null);
+  if (data.pending) {
+    pollTimer = setInterval(async () => {
+      try {
+        const next = await api('GET', '/' + id, null, token);
+        if (next.status !== data.status) { clearInterval(pollTimer); record(id, token); }
+      } catch (e) { /* keep polling */ }
+    }, 4000);
+  }
+}
+
+const STATUS = {
+  DRAFT: ['warn', 'Draft'],
+  SEALING: ['warn', 'Sealing'],
+  AWAITING_LANDLORD: ['warn', 'Sealed, awaiting landlord'],
+  COSIGN_RECEIVED: ['warn', 'Finalising'],
+  SEALED_COSIGNED: ['ok', 'Sealed and co-signed'],
+  SEALED_DISPUTED: ['bad', 'Sealed, disputed by landlord'],
+  SEALED_TENANT_ONLY: ['warn', 'Sealed by tenant only'],
+};
+const STEP_OF = { DRAFT: 0, SEALING: 1, AWAITING_LANDLORD: 2, COSIGN_RECEIVED: 2 };
+const ROLE_NAME = { tenant: 'Tenant view', landlord: 'Landlord view', public: 'Public view' };
+
+function steps(d) {
+  const current = d.status in STEP_OF ? STEP_OF[d.status] : 4;  // 4 = everything done
+  return h('ol', { class: 'steps no-print', 'aria-label': 'Progress' },
+    ['Photos', 'Sealed', 'Landlord', 'Final'].map((name, i) => h('li', {
+      class: i < current ? 'done' : i === current ? 'current' : '',
+      'aria-current': i === current ? 'step' : null,
+    }, h('span', { class: 'num' }, i < current ? icon('check', 14) : String(i + 1)), name)));
+}
+
+function nextStep(d) {
+  const keep = 'Keep the record fingerprint. At move-out, use "Verify a photo" to check any file against it.';
+  switch (d.status) {
+    case 'DRAFT': return d.role === 'tenant'
+      ? ['Add your photos', 'Add and label each photo, then seal the record. Sealing cannot be undone.']
+      : ['Not sealed yet', 'The tenant is still adding photos.'];
+    case 'SEALING': return ['Sealing in progress', `Fingerprinting and locking ${plural(d.photos.length, 'photo')}. This page updates by itself.`];
+    case 'AWAITING_LANDLORD':
+      if (d.role === 'tenant') return ['Send the co-sign link', 'Send the link to your landlord. If they do not answer in time, the record stays sealed as tenant-only.'];
+      if (d.role === 'landlord') return ['Your answer is needed', 'Open each photo to see it full size, then agree or dispute. You can answer once.'];
+      return ['Waiting for the landlord', 'The photos are already locked. The landlord has not answered yet.'];
+    case 'COSIGN_RECEIVED': return ['Finalising', 'The landlord has answered. This page updates by itself.'];
+    case 'SEALED_COSIGNED': return ['Both sides are on record', 'The landlord agreed that these photos show the condition at move-in. ' + keep];
+    case 'SEALED_DISPUTED': return ['The landlord disputed this record', 'The photos stay locked and the dispute is part of the record. ' + keep];
+    default: return ['Sealed without the landlord', 'The landlord did not answer in time. The photos are locked all the same. ' + keep];
+  }
+}
+
+function timeLeft(ms) {
+  if (ms <= 0) return 'the window has closed; finalising';
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), hr = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  if (d >= 2) return `${d} days left`;
+  if (s >= 3600) return `${d * 24 + hr} h ${m} min left`;
+  if (s >= 60) return `${m} min ${s % 60} s left`;
+  return `${s} s left`;
+}
+
+function countdown(deadline) {
+  const span = h('div', { class: 'muted no-print' });
+  const tick = () => { span.textContent = timeLeft(new Date(deadline) - Date.now()); };
+  tick();
+  tickTimer = setInterval(tick, 1000);
+  return span;
+}
+
+function render(d, id, token, linkRole) {
+  roleChip.textContent = ROLE_NAME[d.role];
+  roleChip.hidden = false;
+  const [cls, label] = STATUS[d.status] || ['warn', d.status];
+  const [nextTitle, nextText] = nextStep(d);
+
+  const head = h('section', { class: 'rechead' },
+    h('p', { class: 'eyebrow' }, 'Move-in condition record'),
+    h('h1', { class: 'address' }, d.address),
+    h('span', { class: 'badge ' + cls, role: 'status' }, label),
+    steps(d));
+
+  const main = [];
+  if (linkRole && d.role === 'public') main.push(h('div', { class: 'card no-print' }, h('h2', {}, 'Public view'),
+    banner('warn', `This link does not give ${linkRole} access. Check that you copied the whole link.`)));
+  if (d.lastError) main.push(h('div', { class: 'card no-print' }, banner('bad', d.lastError)));
+  if (d.role === 'public' && !session && !linkRole) main.push(h('div', { class: 'card key no-print' },
+    h('h2', {}, 'Is this your record?'),
+    h('p', {}, 'You are seeing the public view. Sign in with the account that created it to add photos, seal it or get the co-sign link.'),
+    h('div', { class: 'row' }, h('button', { onclick: goSignIn }, 'Sign in'))));
+  if (d.role === 'tenant' && d.status === 'DRAFT') main.push(uploader(d, id, token));
+  if (d.role === 'tenant' && d.status !== 'DRAFT') main.push(shareLinks(d, id));
+  if (d.role === 'landlord' && d.status === 'AWAITING_LANDLORD') main.push(cosignForm(d, id, token));
+  const verifyFirst = d.manifestSha256 && d.role === 'public';
+  if (verifyFirst) main.push(verifyCard(d));
+  if (d.manifestSha256) main.push(sealCard(d));
+  main.push(photoCard(d, id, token));
+  if (d.manifestSha256 && !verifyFirst) main.push(verifyCard(d));
+  if (d.manifestSha256) main.push(printSheet(d, id));
+
+  const aside = h('aside', {},
+    h('div', { class: 'card next no-print' }, h('h2', {}, icon('arrow'), nextTitle), h('p', { style: 'margin:0' }, nextText)),
+    h('div', { class: 'card' },
+      h('h2', { style: 'margin-bottom:14px' }, 'Record details'),
+      h('dl', {},
+        h('dt', {}, 'Tenant'), h('dd', {}, d.tenantName, d.tenantEmail && h('div', { class: 'muted' }, d.tenantEmail)),
+        h('dt', {}, 'Landlord'), h('dd', {}, d.landlordName),
+        h('dt', {}, 'Photos'), h('dd', {}, String(d.photos.length)),
+        h('dt', {}, 'Created'), h('dd', {}, when(d.createdAt)),
+        d.sealedAt && [h('dt', {}, 'Sealed'), h('dd', {}, when(d.sealedAt))],
+        d.status === 'AWAITING_LANDLORD' && [h('dt', {}, 'Co-sign by'), h('dd', {}, when(d.cosignDeadline), countdown(d.cosignDeadline))],
+        d.finalizedAt && [h('dt', {}, 'Finalised'), h('dd', {}, when(d.finalizedAt))],
+        d.landlord && [h('dt', {}, 'Answer'), h('dd', {},
+          h('strong', {}, d.landlord.decision === 'agree' ? 'Agreed' : 'Disputed'),
+          ` · signed "${d.landlord.name}" on ${when(d.landlord.decidedAt)}`,
+          d.landlord.verified && h('div', { class: 'muted' }, 'Verified account' + (d.landlord.verifiedEmail ? ': ' + d.landlord.verifiedEmail : '')),
+          d.landlord.note && h('div', { class: 'muted', style: 'margin-top:4px' }, '"' + d.landlord.note + '"'))])));
+
+  show(head, h('div', { class: 'layout' }, h('div', { class: 'maincol' }, main), aside));
+}
+
+function uploader(d, id, token) {
+  let pending = [];
+  const queue = h('div');
+  const msg = h('div');
+  const zone = dropzone({
+    title: 'Drop photos here or choose files', hint: 'JPEG, PNG or WebP, up to 10 MB each',
+    accept: 'image/jpeg,image/png,image/webp', multiple: true, label: 'Choose move-in photos',
+    onFiles: list => {
+      for (const file of list) pending.push({ file, thumb: URL.createObjectURL(file),
+        input: h('input', { type: 'text', maxlength: 80, placeholder: 'What does it show? e.g. Kitchen: sink and counter', 'aria-label': 'Label for ' + file.name }) });
+      msg.replaceChildren();
+      draw();
+    },
+  });
+  const upload = h('button', { hidden: true, onclick: async () => {
+    const blank = pending.find(item => !item.input.value.trim());
+    if (blank) { blank.input.focus(); return msg.replaceChildren(banner('bad', 'Give every photo a label, so it can be recognised at move-out.')); }
+    upload.disabled = true;
+    const total = pending.length;
+    try {
+      for (const item of [...pending]) {
+        msg.replaceChildren(h('p', { class: 'muted', role: 'status', style: 'margin-top:12px' }, `Uploading ${total - pending.length + 1} of ${total}: ${item.file.name}`));
+        const r = await api('POST', `/${id}/photos`, { label: item.input.value, filename: item.file.name, contentType: item.file.type }, token);
+        const form = new FormData();
+        for (const [k, v] of Object.entries(r.upload.fields)) form.append(k, v);
+        form.append('file', item.file);
+        const up = await fetch(r.upload.url, { method: 'POST', body: form });
+        if (!up.ok) throw new Error('Upload failed for ' + item.file.name + ' (the limit is 10 MB)');
+        pending = pending.filter(x => x !== item);
+      }
+      route();
+    } catch (e) { msg.replaceChildren(banner('bad', e.message)); upload.disabled = false; draw(); }
+  } }, icon('upload'), 'Upload these photos');
+  function draw() {
+    queue.replaceChildren(...pending.map(item => h('div', { class: 'qrow' },
+      h('img', { src: item.thumb, alt: '' }),
+      h('div', {}, h('span', { class: 'qname', title: item.file.name }, item.file.name), item.input),
+      h('button', { class: 'ghost small', type: 'button', onclick: () => { pending = pending.filter(x => x !== item); draw(); } }, 'Remove'))));
+    upload.hidden = !pending.length;
+  }
+  const seal = h('button', { class: d.photos.length ? '' : 'ghost', disabled: !d.photos.length, onclick: () => {
+    if (pending.length) return msg.replaceChildren(banner('bad', 'Upload or remove the photos you selected before sealing.'));
+    const back = h('button', { class: 'ghost', onclick: () => { msg.replaceChildren(); actions.hidden = false; } }, 'Go back');
+    const yes = h('button', { onclick: async () => {
+      yes.disabled = back.disabled = true;
+      try { await api('POST', `/${id}/seal`, {}, token); route(); }
+      catch (e) { msg.replaceChildren(banner('bad', e.message)); actions.hidden = false; }
+    } }, icon('lock'), 'Yes, seal it');
+    actions.hidden = true;
+    msg.replaceChildren(
+      banner('warn', `Seal this record with ${plural(d.photos.length, 'photo')}? After sealing, photos cannot be added, changed or removed.`),
+      h('div', { class: 'row' }, yes, back));
+  } }, icon('lock'), 'Seal the record');
+  const actions = h('div', { class: 'row' }, upload, seal);
+  return h('div', { class: 'card' },
+    h('h2', {}, 'Add move-in photos'),
+    h('p', { class: 'muted' }, 'Photograph every room, and anything already damaged. Label each photo so it can be recognised later.'),
+    zone, queue, actions, msg);
+}
+
+function shareLinks(d, id) {
+  return h('div', { class: 'card no-print' },
+    h('h2', {}, 'Links to share'),
+    d.status === 'AWAITING_LANDLORD' && linkRow('Co-sign link: send this to your landlord', `${baseUrl()}#/r/${id}/landlord/${d.landlordToken}`),
+    linkRow('Public verification link: shows fingerprints only, never the photos', `${baseUrl()}#/r/${id}`));
+}
+
+function cosignForm(d, id, token) {
+  const name = h('input', { type: 'text', maxlength: 120, placeholder: 'Type your full name' });
+  const note = h('textarea', { maxlength: 500, placeholder: 'Required if you dispute: say what is wrong or missing.' });
+  const msg = h('div');
+  const confirmBox = h('div');
+  const ask = decision => () => {
+    msg.replaceChildren();
+    if (!name.value.trim()) { name.focus(); return msg.replaceChildren(banner('bad', 'Type your name to sign.')); }
+    if (decision === 'dispute' && !note.value.trim()) { note.focus(); return msg.replaceChildren(banner('bad', 'Say what you dispute, so the record shows your reason.')); }
+    const back = h('button', { class: 'ghost', onclick: () => { confirmBox.replaceChildren(); choices.hidden = false; } }, 'Go back');
+    const yes = h('button', { class: decision === 'dispute' ? 'danger' : '', onclick: async () => {
+      yes.disabled = back.disabled = true;
+      try { await api('POST', `/${id}/cosign`, { decision, name: name.value, note: note.value }, token); route(); }
+      catch (e) { msg.replaceChildren(banner('bad', e.message)); yes.disabled = back.disabled = false; }
+    } }, decision === 'agree' ? 'Yes, record my agreement' : 'Yes, record my dispute');
+    choices.hidden = true;
+    const what = decision === 'agree' ? 'agree that these photos show the condition of the home at move-in' : 'dispute this record';
+    confirmBox.replaceChildren(
+      banner('warn', `You are about to ${what}, signed as "${name.value.trim()}". Your answer is recorded permanently and cannot be changed.`),
+      h('div', { class: 'row' }, yes, back));
+  };
+  const choices = h('div', { class: 'row' },
+    h('button', { onclick: ask('agree') }, icon('check'), 'I agree: this is the condition'),
+    h('button', { class: 'danger', onclick: ask('dispute') }, 'I dispute this record'));
+  return h('div', { class: 'card no-print' },
+    h('h2', {}, 'Co-sign this move-in record'),
+    h('p', { class: 'muted' }, `${d.tenantName} sealed the ${plural(d.photos.length, 'photo')} below as the condition of the home at move-in. You can answer once, before ${when(d.cosignDeadline)}.`),
+    field('Your name', name),
+    field('Note', note),
+    session
+      ? h('p', { class: 'muted', style: 'margin:12px 0 0' }, `Your answer will carry your verified account, ${session.email}.`)
+      : h('p', { class: 'muted', style: 'margin:12px 0 0' }, 'Optional: ', h('button', { class: 'linkbtn', type: 'button', onclick: goSignIn }, 'sign in'), ' first to attach a verified email to your answer.'),
+    choices, confirmBox, msg);
+}
+
+function stamp(d) {
+  const [cls] = STATUS[d.status];
+  const word = { SEALED_COSIGNED: 'CO-SIGNED', SEALED_DISPUTED: 'DISPUTED', SEALED_TENANT_ONLY: 'TENANT ONLY' }[d.status] || 'AWAITING';
+  const date = new Date(d.sealedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+  const box = h('div', { class: 'stamp ' + cls, role: 'img', 'aria-label': `Sealed ${date}, ${word.toLowerCase()}` });
+  box.innerHTML = `<svg viewBox="0 0 132 132" width="132" height="132" fill="none" stroke="currentColor">
+    <circle cx="66" cy="66" r="62" stroke-width="3"/><circle cx="66" cy="66" r="55" stroke-width="1"/>
+    <circle cx="66" cy="66" r="36" stroke-width="1" stroke-dasharray="2 3"/>
+    <path id="arc" d="M66 66m-45 0a45 45 0 1 1 90 0a45 45 0 1 1 -90 0" stroke="none"/>
+    <text font-family="Inter,system-ui,sans-serif" font-size="9.5" font-weight="700" letter-spacing="2.6" fill="currentColor" stroke="none"><textPath href="#arc">MOVE-IN PROOF  •  LOCKED EVIDENCE  •  </textPath></text>
+    <text x="66" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="17" font-weight="700" fill="currentColor" stroke="none">SEALED</text>
+    <text x="66" y="76" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="8" font-weight="700" letter-spacing="1" fill="currentColor" stroke="none">${date}</text>
+    <text x="66" y="88" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="7" font-weight="700" letter-spacing="1.2" fill="currentColor" stroke="none">${word}</text></svg>`;
+  return box;
+}
+
+function sealCard(d) {
+  const check = h('div', { class: 'tick warn' }, 'Checking the record...');
+  textHash(d.manifest).then(hash => {
+    const ok = hash === d.manifestSha256;
+    check.className = 'tick ' + (ok ? 'ok' : 'bad');
+    check.replaceChildren(icon(ok ? 'check' : 'x', 16), ok ? 'Checked in your browser: the record is intact' : 'WARNING: the record does not match its fingerprint');
+  });
+  return h('div', { class: 'card' },
+    h('div', { class: 'sealgrid' },
+      h('div', {},
+        h('h2', {}, 'The seal'),
+        h('p', {}, `${plural(d.photos.length, 'photo')} ${d.photos.length === 1 ? 'was' : 'were'} fingerprinted and locked on ${when(d.sealedAt)}.` +
+          (d.lock ? ` Locked against changes until ${when(d.lock.retainUntil)}.` : '')),
+        h('p', { class: 'muted', style: 'margin-bottom:6px' }, 'Record fingerprint'),
+        h('div', { class: 'linkbox' }, h('code', { class: 'fingerprint' }, d.manifestSha256), copyButton(() => d.manifestSha256)),
+        check),
+      stamp(d)),
+    h('p', { class: 'muted', style: 'margin-top:14px' }, 'Tenant and landlord should each keep this fingerprint: a message to each other is enough. It changes if any photo, label or name in the record changes.'),
+    h('div', { class: 'row' }, h('button', { class: 'ghost', onclick: () => window.print() }, icon('print'), 'Print or save as PDF')),
+    h('details', {}, h('summary', {}, 'Technical details'),
+      h('dl', {},
+        h('dt', {}, 'Fingerprint type'), h('dd', {}, 'SHA-256 of the record manifest, which lists the SHA-256 of every photo'),
+        h('dt', {}, 'Storage lock'), h('dd', {}, d.lock ? `Amazon S3 Object Lock, ${d.lock.mode.toLowerCase()} mode, until ${d.lock.retainUntil}` : 'No lock found'),
+        h('dt', {}, 'Manifest size'), h('dd', {}, new TextEncoder().encode(d.manifest).length + ' bytes'))));
+}
+
+function lightbox(p) {
+  const dlg = h('dialog', { class: 'lightbox' },
+    h('img', { src: p.url, alt: p.label }),
+    h('div', { class: 'row', style: 'justify-content:space-between' }, h('strong', {}, p.label), h('button', { class: 'ghost', onclick: () => dlg.close() }, 'Close')));
+  dlg.addEventListener('close', () => dlg.remove());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  document.body.append(dlg);
+  dlg.showModal();
+}
+
+function photoCard(d, id, token) {
+  const removable = d.role === 'tenant' && d.status === 'DRAFT';
+  const remove = p => h('button', { class: 'ghost small', type: 'button', style: 'margin-top:8px', onclick: async e => {
+    e.currentTarget.disabled = true;
+    try { await api('DELETE', `/${id}/photos/${p.photoId}`, null, token); route(); }
+    catch (err) { alert(err.message); route(); }
+  } }, 'Remove');
+  return h('div', { class: 'card' },
+    h('h2', {}, d.photos.length ? `Photos (${d.photos.length})` : 'Photos'),
+    d.role === 'public' && d.photos.length > 0 && h('p', { class: 'muted no-print' }, 'The photos themselves are visible only through the tenant and landlord links. This view shows their fingerprints.'),
+    d.photos.length === 0 ? h('p', { class: 'muted', style: 'margin:0' }, 'No photos yet. Added photos appear here.') :
+    h('div', { class: 'grid' }, d.photos.map(p => h('div', { class: 'photo', id: 'photo-' + p.photoId },
+      p.url ? h('button', { class: 'imgbtn', type: 'button', 'aria-label': 'View full size: ' + p.label, onclick: () => lightbox(p) },
+        h('img', { src: p.url, alt: p.label, loading: 'lazy' }))
+        : h('div', { class: 'nophoto no-print' }, icon('eyeoff', 26)),
+      h('div', { class: 'meta' },
+        h('strong', {}, p.label),
+        p.sha256 && h('div', { class: 'mono muted hash no-print', title: p.sha256 }, p.sha256),
+        removable && remove(p))))));
+}
+
+function verifyCard(d) {
+  const out = h('div', { role: 'status' });
+  const verdict = (cls, ic, title, text, hash) => h('div', { class: 'verdict ' + cls },
+    h('span', { class: 'vicon' }, icon(ic, 22)),
+    h('div', {}, h('strong', {}, title), h('span', {}, text), h('div', { class: 'mono', style: 'margin-top:6px;opacity:.8' }, hash)));
+  const zone = dropzone({
+    title: 'Drop a photo here or choose a file', hint: 'Fingerprinted on this device. The file is not uploaded.', label: 'Photo to verify',
+    onFiles: async list => {
+      document.querySelectorAll('.photo.hit').forEach(el => el.classList.remove('hit'));
+      if (!list[0]) return;
+      const hash = await sha256Hex(await list[0].arrayBuffer());
+      const match = d.photos.find(p => p.sha256 === hash);
+      if (match) {
+        document.getElementById('photo-' + match.photoId).classList.add('hit');
+        out.replaceChildren(verdict('ok', 'check', 'Match', `"${list[0].name}" is exactly the file sealed on ${when(d.sealedAt)} as "${match.label}".`, hash));
+      } else {
+        out.replaceChildren(verdict('bad', 'x', 'No match', `"${list[0].name}" is not in the sealed record. It was edited, re-saved or never part of it.`, hash));
+      }
+    },
+  });
+  return h('div', { class: 'card no-print' },
+    h('h2', {}, 'Verify a photo'),
+    h('p', { class: 'muted' }, 'Check a photo someone claims is from move-in. A single changed pixel is enough to fail.'),
+    zone, out);
+}
+
+// Shown only on paper / in the saved PDF.
+function printSheet(d, id) {
+  return h('div', { class: 'print-only' },
+    h('h2', {}, 'Photo fingerprints (SHA-256)'),
+    h('table', {},
+      h('thead', {}, h('tr', {}, ['#', 'Label', 'File name', 'Size', 'Fingerprint'].map(t => h('th', {}, t)))),
+      h('tbody', {}, d.photos.map((p, i) => h('tr', {},
+        h('td', {}, String(i + 1)), h('td', {}, p.label), h('td', {}, p.filename),
+        h('td', {}, Math.max(1, Math.round(p.size / 1024)) + ' KB'), h('td', { class: 'mono' }, p.sha256))))),
+    h('p', { style: 'margin-top:12px' }, 'Check any photo against this record at: ', h('span', { class: 'mono' }, `${baseUrl()}#/r/${id}`)),
+    h('p', { class: 'muted' }, 'Printed ' + when(new Date().toISOString()) + '. A photo matches only if its file is byte-for-byte identical to the one sealed.'));
+}
+
+// ---- account pages ------------------------------------------------------
+function authPage() {
+  roleChip.hidden = true;
+  if (session) { const next = afterAuth || '#/records'; afterAuth = null; location.hash = next; return; }
+  show(h('div', { class: 'authwrap' }, authCard('signin')));
+}
+
+async function recordsPage() {
+  roleChip.hidden = true;
+  if (!session) return goSignIn();
+  let list;
+  try { list = (await api('GET', '')).records; } catch (e) { return fail(e); }
+  const head = h('section', { class: 'pagehead' },
+    h('div', {}, h('p', { class: 'eyebrow' }, session.email), h('h1', { class: 'address', style: 'margin:0' }, 'My records')),
+    h('a', { href: '#/', style: 'text-decoration:none' }, h('button', { type: 'button' }, 'New record', icon('arrow'))));
+  const body = list.length === 0
+    ? h('div', { class: 'card', style: 'max-width:520px' }, h('h2', {}, 'No records yet'),
+        h('p', { class: 'muted', style: 'margin:0' }, 'Start one on move-in day. It appears here, and you can come back to it from any device.'))
+    : h('div', { class: 'reclist' }, list.map(r => {
+        const [cls, label] = STATUS[r.status] || ['warn', r.status];
+        return h('a', { class: 'card recitem', href: '#/r/' + r.id },
+          h('div', {}, h('strong', {}, r.address), h('span', { class: 'muted' }, `Landlord: ${r.landlordName} · created ${when(r.createdAt)}`)),
+          h('span', { class: 'badge ' + cls }, label));
+      }));
+  show(head, body);
+}
+
+// ---- router -------------------------------------------------------------
+function route() {
+  clearInterval(pollTimer);
+  clearInterval(tickTimer);
+  const m = location.hash.match(/^#\/r\/([\w-]+)(?:\/landlord\/([\w-]+))?$/);
+  if (m) record(m[1], m[2]);
+  else if (location.hash === '#/signin') authPage();
+  else if (location.hash === '#/records') recordsPage();
+  else home();
+}
+
+async function boot() {
+  try { cfg = await (await fetch('/api/config')).json(); } catch (e) { /* sign-in will report the failure */ }
+  drawNav();
+  window.addEventListener('hashchange', route);
+  route();
+}
+boot();
+</script>
+</body>
+</html>
