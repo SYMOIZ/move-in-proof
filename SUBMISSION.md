@@ -1,3 +1,5 @@
+![Move-In Proof: same photo, one byte apart](docs/banner.png)
+
 # Move-In Proof: move-in photos that neither tenant nor landlord can change later
 
 **Weekend Challenge: No Pipeline, No Problem** · built by **Syed Moiz**
@@ -13,6 +15,9 @@
 > **Trying the live app:** create a free account with any email you can read (Cognito sends a 6-digit
 > code), start a record, add photos and seal it. The landlord's co-sign window is 120 seconds in this
 > deployment so the whole flow, including the timeout path, can be seen in minutes.
+
+**Short on time? Two minutes is enough:** watch the video, then open the live app and press "Create
+account". Everything described below was run on the deployed stack, not only on a laptop.
 
 ---
 
@@ -158,6 +163,27 @@ where it stopped.
 - **No email or SMS.** The tenant shares the link over whatever they already use, so there is no SES
   sandbox or SMS registration to wait for.
 
+## How I tried to break it
+
+Evidence is only worth something if a motivated person cannot get around it, so I wrote the attacks
+first and then made each one fail.
+
+| Attack | What happens | Proven |
+|---|---|---|
+| Delete a sealed photo | S3 refuses: "protected by object lock" | Live on AWS |
+| Shorten a photo's lock to release it early | S3 refuses | Live on AWS |
+| Re-upload a different file over a sealed photo using a still-valid upload link | The manifest pins object **version IDs**, so the record keeps showing the original | Test |
+| Change one byte of a photo, then verify it | "No match" | Live on AWS |
+| Add or remove photos after sealing | Rejected (409) | Test |
+| Press "Seal" twice | The second is rejected; one workflow run only | Test |
+| Landlord answers twice, or after the window closed | Rejected (409); the timeout result stands | Test (the timeout path itself ran live) |
+| Tenant tries to co-sign as the landlord | Rejected (403) | Test |
+| A stranger or the landlord link tries to add photos or seal | Rejected (403) | Test |
+| Dispute with no reason | Rejected (400) | Test |
+| Photo link issued but file never uploaded | Left out of the seal | Test |
+| Seal with nothing uploaded | Record returns to draft with an error | Test |
+| Call the signed-in API with no or a fake token | 401 from API Gateway | Live on AWS |
+
 ## What I tested
 
 **On the deployed stack (us-east-1):**
@@ -199,6 +225,19 @@ attaches a verified email; tested locally only), dark mode, and the printed layo
 | **Craft and execution** | One handler behind two API doors; conditional writes; fail-safe revert; 22 tests plus a real run against the deployed stack |
 | **Usefulness and impact** | A real, common dispute (rental deposits) solved with a pattern anyone can reuse for vehicle handovers, equipment rentals and delivery condition reports |
 | **Creativity and storytelling** | The problem in one sentence, a live demo, and a one-byte "No match" moment |
+
+## Cost
+
+Nothing is provisioned and nothing runs while idle: Lambda, API Gateway, DynamoDB (on-demand),
+Step Functions and S3 are all pay-per-use, and a record that is waiting for its landlord costs
+nothing while it waits. The standing cost is S3 storage for the photos you keep.
+
+## What I would build next
+
+- A PDF move-in report generated from the manifest, to hand to a mediator.
+- Compliance-mode Object Lock for deployments where even an administrator must not be able to delete.
+- A move-out inspection that compares new photos with the sealed ones, side by side.
+- Email reminders to the landlord through SES, once out of the sandbox.
 
 ## Deploy it yourself
 

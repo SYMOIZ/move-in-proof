@@ -7,7 +7,11 @@ Built by **Syed Moiz** for the AWS Builder Center weekend challenge "No Pipeline
 - **Demo video:** https://www.youtube.com/watch?v=9Gith267CSc
 - **Full write-up with screenshots:** [SUBMISSION.md](SUBMISSION.md)
 
-![Sealed and co-signed record](docs/screenshots/11-seal-final.jpg)
+![Move-In Proof: same photo, one byte apart](docs/banner.png)
+
+> Submission material: [SUBMISSION.md](SUBMISSION.md) (write-up), [docs/FORM_FIELDS.md](docs/FORM_FIELDS.md)
+> (text to paste into the Builder Center form), and `docs/Move-In-Proof-Submission.docx` (Word version
+> with every screenshot).
 
 ## The problem
 
